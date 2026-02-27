@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Save Tabs to Bookmark Folder",
+  "version": "1.0.0",
+  "description": "Save all open tabs into a bookmark folder named by you.",
+  "action": {
+    "default_title": "Save tabs",
+    "default_popup": "popup.html"
+  },
+  "permissions": ["tabs", "bookmarks"]
+}
