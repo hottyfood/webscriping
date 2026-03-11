@@ -7,8 +7,6 @@
       body { font-family: system-ui, Arial; margin: 12px; width: 320px; }
       label { display:block; margin-top: 10px; font-size: 12px; }
       input[type="text"], input[type="number"] { width: 100%; padding: 8px; box-sizing: border-box; }
-      .row { display:flex; gap: 10px; }
-      .row > div { flex: 1; }
       .check { margin-top: 10px; display:flex; gap: 8px; align-items: center; }
       button { margin-top: 12px; width: 100%; padding: 9px; }
       .status { margin-top: 10px; font-size: 12px; }
@@ -18,17 +16,8 @@
     <label for="name">Bookmark folder name</label>
     <input id="name" placeholder="e.g. Research - Feb 27" autofocus />
 
-    <div class="row">
-      <div>
-        <label for="limit">Max tabs to save</label>
-        <input id="limit" type="number" min="1" step="1" placeholder="e.g. 10 (leave blank = all)" />
-      </div>
-    </div>
-
-    <div class="check">
-      <input id="fromCurrent" type="checkbox" />
-      <label for="fromCurrent" style="margin:0;">Only save from current tab onward</label>
-    </div>
+    <label for="limit">Max tabs to save (leftmost N)</label>
+    <input id="limit" type="number" min="1" step="1" placeholder="e.g. 10 (leave blank = all)" />
 
     <div class="check">
       <input id="closeAfter" type="checkbox" />

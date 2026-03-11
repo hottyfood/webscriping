@@ -1,7 +1,6 @@
 const nameInput = document.getElementById("name");
 const limitInput = document.getElementById("limit");
 const closeAfterInput = document.getElementById("closeAfter");
-const fromCurrentInput = document.getElementById("fromCurrent");
 
 const saveBtn = document.getElementById("save");
 const statusEl = document.getElementById("status");
@@ -47,32 +46,25 @@ async function saveTabsToBookmarks() {
   }
 
   const closeAfter = closeAfterInput.checked;
-  const fromCurrent = fromCurrentInput.checked;
 
   setStatus("Reading tabs...");
 
   // Tabs in current window
   let tabs = await chrome.tabs.query({ currentWindow: true });
 
-  // Sort by tab position (left -> right)
+  // Sort left -> right (tab strip order)
   tabs.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
 
-  // Option: only from active tab onward
-  if (fromCurrent) {
-    const activeIndex = tabs.findIndex((t) => t.active);
-    if (activeIndex >= 0) tabs = tabs.slice(activeIndex);
-  }
-
-  // Remove non-bookmarkable internal pages
+  // Remove internal/non-bookmarkable pages
   tabs = tabs.filter((t) => t.url && !isSkippableUrl(t.url));
 
-  // Limit how many to save
+  // Leftmost N
   if (limit !== null) {
     tabs = tabs.slice(0, limit);
   }
 
   if (tabs.length === 0) {
-    setStatus("No bookmarkable tabs found (after filters).");
+    setStatus("No bookmarkable tabs found.");
     return;
   }
 
@@ -80,31 +72,27 @@ async function saveTabsToBookmarks() {
   const parentId = "1";
   const folder = await getOrCreateFolder(parentId, folderTitle);
 
-  setStatus(`Saving ${tabs.length} tabs...`);
+  setStatus(`Saving ${tabs.length} tab(s)...`);
 
-  let created = 0;
   const toCloseIds = [];
-
   for (const t of tabs) {
     await chrome.bookmarks.create({
       parentId: folder.id,
       title: t.title || t.url,
       url: t.url
     });
-    created++;
+
     if (closeAfter && typeof t.id === "number") {
       toCloseIds.push(t.id);
     }
   }
 
-  // Close tabs after saving
   if (closeAfter && toCloseIds.length > 0) {
-    // Note: closing the active tab is allowed; Chrome will switch to another tab.
     await chrome.tabs.remove(toCloseIds);
   }
 
   setStatus(
-    `Saved ${created} tab(s) into "${folder.title}"` +
+    `Saved ${tabs.length} tab(s) into "${folder.title}"` +
       (closeAfter ? " and closed them." : ".")
   );
 }
@@ -116,7 +104,6 @@ saveBtn.addEventListener("click", () => {
   });
 });
 
-// Enter key triggers save (when typing in folder name)
 nameInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") saveBtn.click();
 });
