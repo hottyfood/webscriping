@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Always Active Tab",
+  "version": "1.0",
+  "description": "Prevent some websites from pausing video when the tab is not selected.",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": ["inject.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
