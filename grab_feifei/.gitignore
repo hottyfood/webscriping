@@ -1,0 +1,15 @@
+# --- Python ---
+__pycache__/
+*.pyc
+
+# --- All venvs (any folder) ---
+.venv/
+
+# --- Selenium profiles ---
+selenium_profile/
+
+# --- Env / secrets ---
+.env
+
+# --- VS Code ---
+.vscode/
