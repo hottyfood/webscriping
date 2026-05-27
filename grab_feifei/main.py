@@ -6,10 +6,13 @@ from zoneinfo import ZoneInfo
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 PROFILE_PATH = r"C:\selenium_profiles\grab_feifei"
 TARGET_URL = "https://octopus.energy/dashboard/new/accounts/A-CCA3F37C/octoplus/partner/offer-group/925"
+
 OFFER_TITLE = "A hot or cold drink on us - any size, every week"
 
 UK_TZ = ZoneInfo("Europe/London")
@@ -22,12 +25,14 @@ ACTIVE_BASE_SECONDS = 5 * 60
 ACTIVE_RANDOM_SECONDS = 60
 
 
+def now_uk():
+    return datetime.now(UK_TZ)
+
+
 def next_datetime(target_time):
-    now = datetime.now(UK_TZ)
+    now = now_uk()
     target = datetime.combine(now.date(), target_time, tzinfo=UK_TZ)
-    if now >= target:
-        target += timedelta(days=1)
-    return target
+    return target if now < target else target + timedelta(days=1)
 
 
 active_start_dt = next_datetime(ACTIVE_START)
@@ -43,7 +48,7 @@ try:
     driver.get(TARGET_URL)
 
     while True:
-        now = datetime.now(UK_TZ)
+        now = now_uk()
 
         if now >= stop_dt:
             print(f"[{now:%Y-%m-%d %H:%M:%S %Z}] Reached 07:00 cutoff. Stopping.")
@@ -57,19 +62,43 @@ try:
             card = driver.find_element(
                 By.XPATH,
                 f"//h3[normalize-space()='{OFFER_TITLE}']"
-                "/ancestor::div[.//button[@data-part='button-root']][1]"
+                "/ancestor::div[@data-testid='offer-card'][1]"
             )
-            button = card.find_element(By.XPATH, ".//button[@data-part='button-root']")
 
-            if button.is_enabled() and not button.get_attribute("disabled"):
-                print(f"[{datetime.now(UK_TZ):%Y-%m-%d %H:%M:%S %Z}] Button available. Clicking.")
-                button.click()
+            target = card.find_element(By.XPATH, ".//*[@data-part='button-root']")
+            tag_name = target.tag_name.lower()
+            href = target.get_attribute("href")
+            disabled = target.get_attribute("disabled")
+
+            if tag_name == "a" and href:
+                print(f"[{now_uk():%Y-%m-%d %H:%M:%S %Z}] Offer available. Clicking Reveal offer.")
+                target.click()
+
+                activate_button = WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable(
+                        (
+                            By.XPATH,
+                            "//button[@data-part='button-root' "
+                            "and .//span[normalize-space()='Activate offer']]",
+                        )
+                    )
+                )
+
+                print(f"[{now_uk():%Y-%m-%d %H:%M:%S %Z}] Clicking Activate offer.")
+                activate_button.click()
+                break
+
+            if tag_name == "button" and not disabled and target.is_enabled():
+                print(f"[{now_uk():%Y-%m-%d %H:%M:%S %Z}] Button available. Clicking.")
+                target.click()
                 break
 
             print("Still disabled.")
 
         except Exception as e:
             print(f"Check failed: {e}")
+
+        now = now_uk()
 
         if now >= active_start_dt:
             sleep_seconds = ACTIVE_BASE_SECONDS + random.uniform(
@@ -78,7 +107,10 @@ try:
             )
             print(f"Active mode. Next check in {sleep_seconds:.1f} seconds.")
         else:
-            sleep_seconds = min(IDLE_REFRESH_SECONDS, (active_start_dt - now).total_seconds())
+            sleep_seconds = min(
+                IDLE_REFRESH_SECONDS,
+                (active_start_dt - now).total_seconds(),
+            )
             print(f"Idle mode. Next check in {sleep_seconds:.1f} seconds.")
 
         time.sleep(max(30, sleep_seconds))
