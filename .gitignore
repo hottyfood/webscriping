@@ -1,0 +1,42 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# ---------- Virtual Environments ----------
+**/.venv/
+**/venv/
+
+# ---------- Jupyter ----------
+.ipynb_checkpoints/
+
+# ---------- IDE ----------
+.vscode/
+.idea/
+
+# ---------- Environment ----------
+.env
+.env.*
+
+# ---------- Logs ----------
+*.log
+
+# ---------- Generated media ----------
+youtube_dl/videos/
+youtube_dl/audio/
+youtube_dl/transcripts/
+
+# Or simply ignore all media everywhere
+*.mp4
+*.mkv
+*.webm
+*.mp3
+*.wav
+*.m4a
+*.srt
+*.vtt
+
+# ---------- OS ----------
+Thumbs.db
+.DS_Store

@@ -1,0 +1,6 @@
+yt-dlp
+faster-whisper
+youtube-transcript-api
+
+ipykernel
+jupyter
